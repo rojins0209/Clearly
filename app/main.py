@@ -30,14 +30,15 @@ def states():
     """The run lifecycle: states, what each means, and which action moves a run where."""
     return machine()
 
+# Display text for the prepared demo invoices: (plain-English title, expected outcome, chip label, scenario label)
 SAMPLES = {
-    "01_happy_sri_lakshmi.pdf": ("Happy path", "Clean digital invoice, PO quoted, intra-state CGST+SGST"),
-    "02_happy_deccan_office.pdf": ("Happy path", "Inter-state IGST, different layout, price 0.2% over PO (within tolerance)"),
-    "03_edge_partial_delivery_kaveri.pdf": ("Edge case 1", "Bills 120 LED panels, warehouse received 80"),
-    "04_edge_bank_change_malabar.pdf": ("Edge case 2", "Everything matches, but bank details changed on the invoice"),
-    "05_edge_wrong_gst_coastal.pdf": ("Edge case 3", "Karnataka vendor to Karnataka buyer, charged IGST"),
-    "06_edge_scanned_no_po_nilgiri.pdf": ("Edge case 4", "Scanned image, no PO number, two open POs for this vendor"),
-    "07_duplicate_resend_sri_lakshmi.pdf": ("Control", "Same invoice re-sent as a 'reminder' with the number reformatted"),
+    "01_happy_sri_lakshmi.pdf": ("Clean invoice: PO quoted, everything matches", "APPROVE", "Approve", "Happy path"),
+    "02_happy_deccan_office.pdf": ("Price 0.2% above the PO, inside the 1% tolerance", "APPROVE", "Approve", "Happy path"),
+    "03_edge_partial_delivery_kaveri.pdf": ("Billed for 120 LED panels, only 80 delivered", "HOLD", "Hold", "Edge case 1"),
+    "04_edge_bank_change_malabar.pdf": ("Everything matches, but the bank account has changed", "HOLD", "Hold", "Edge case 2"),
+    "05_edge_wrong_gst_coastal.pdf": ("Wrong tax type: same-state supply charged IGST", "REJECT", "Reject", "Edge case 3"),
+    "06_edge_scanned_no_po_nilgiri.pdf": ("Scanned paper invoice with no PO number", "HOLD", "Hold → Approve after confirm", "Edge case 4"),
+    "07_duplicate_resend_sri_lakshmi.pdf": ("Same invoice re-sent as a \"reminder\"", "REJECT", "Reject (run after 01)", "Control"),
 }
 
 
@@ -54,8 +55,11 @@ def health():
 
 @app.get("/api/samples")
 def samples():
-    return [{"name": n, "tag": SAMPLES.get(n, ("Sample", ""))[0], "description": SAMPLES.get(n, ("", ""))[1]}
-            for n in sorted(p.name for p in config.SAMPLES_DIR.glob("*.pdf"))]
+    out = []
+    for n in sorted(p.name for p in config.SAMPLES_DIR.glob("*.pdf")):
+        title, outcome, label, tag = SAMPLES.get(n, (n, "", "", ""))
+        out.append({"name": n, "title": title, "outcome": outcome, "outcome_label": label, "tag": tag})
+    return out
 
 
 @app.post("/api/runs/sample/{name}")

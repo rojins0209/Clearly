@@ -15,14 +15,14 @@ from .stages.ingest import ingest
 from .util import money, norm_invoice_no, now_iso, parse_date
 
 STAGES = [
-    ("ingest", "Read document"),
-    ("extract", "Extract fields"),
-    ("confidence", "Verify extraction"),
-    ("validate", "Validate invoice"),
-    ("compliance", "Vendor & GST checks"),
-    ("duplicates", "Duplicate check"),
-    ("po", "Find purchase order"),
-    ("match", "3-way match"),
+    ("ingest", "Open the invoice"),
+    ("extract", "Read the details"),
+    ("confidence", "Double-check the reading"),
+    ("validate", "Basic checks"),
+    ("compliance", "Vendor & tax checks"),
+    ("duplicates", "Already paid?"),
+    ("po", "Find the order (PO)"),
+    ("match", "Match order, delivery & bill"),
     ("decision", "Decision"),
 ]
 

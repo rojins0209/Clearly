@@ -1,10 +1,12 @@
 // Clearly - vanilla JS front end. Hash routes: #/  #/run/:id  #/reference
 const $app = document.getElementById("app");
 const STAGES = [
-  ["ingest", "Read document"], ["extract", "Extract fields"], ["confidence", "Verify extraction"],
-  ["validate", "Validate invoice"], ["compliance", "Vendor & GST checks"], ["duplicates", "Duplicate check"],
-  ["po", "Find purchase order"], ["match", "3-way match"], ["decision", "Decision"],
+  ["ingest", "Open the invoice"], ["extract", "Read the details"], ["confidence", "Double-check the reading"],
+  ["validate", "Basic checks"], ["compliance", "Vendor & tax checks"], ["duplicates", "Already paid?"],
+  ["po", "Find the order (PO)"], ["match", "Match order, delivery & bill"], ["decision", "Decision"],
 ];
+// Short, non-technical name for how the invoice was read. The full extractor string stays in a tooltip.
+const readerName = (x) => !x ? "" : /claude/i.test(x) ? "Claude" : "OCR";
 const FIELD_LABELS = {
   invoice_number: "Invoice number", invoice_date: "Invoice date", vendor_gstin: "Vendor GSTIN", buyer_gstin: "Buyer GSTIN",
   total: "Total", line_items: "Line items", po_reference: "PO reference", subtotal: "Taxable value", cgst: "CGST",
@@ -39,7 +41,6 @@ const STATE_CHIP = {
   superseded: ["superseded", "SUPERSEDED"],
 };
 const stateChip = (r) => { const [cls, txt] = STATE_CHIP[r.state] || ["", r.state]; return `<span class="chip ${cls}" title="${esc(r.state_label || "")}">${txt}</span>`; };
-const tagClass = (t) => t.startsWith("Happy") ? "happy" : t.startsWith("Edge") ? "edge" : "ctrl";
 
 // ---------------------------------------------------------------- router
 async function route() {
@@ -63,24 +64,22 @@ async function renderDashboard() {
   const [samples, runs, stats] = await Promise.all([api("/api/samples"), api("/api/runs"), api("/api/stats")]);
   $app.innerHTML = `
   <div class="page-head">
-    <div><h1>Accounts payable · invoice decisions</h1>
-      <p>Drop a vendor invoice. Clearly reads it, checks it against the vendor master, POs and goods receipts, and decides: approve, hold or reject, and who needs to act.</p></div>
+    <div><h1>Invoice decisions</h1>
+      <p>Clearly reads a vendor invoice, checks it against your vendors, purchase orders and deliveries, and decides: approve, hold or reject, and who needs to act.</p></div>
   </div>
-  <div class="grid g-intake">
-    <div class="card"><div class="card-h"><h2>Process an invoice</h2><span class="muted small">PDF · digital or scanned</span></div>
-      <div class="card-b" style="height:calc(100% - 50px)">
-        <label class="drop" id="drop"><input type="file" id="file" accept="application/pdf" hidden />
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
-          <strong>Drop an invoice PDF here</strong><span class="small">or click to choose a file</span></label>
-      </div></div>
-    <div class="card"><div class="card-h"><h2>Prepared demo invoices</h2><span class="muted small">click to run</span></div>
-      <div class="card-b" style="padding:4px 16px"><div class="samples">
-        ${samples.map((s) => `<div class="sample" data-sample="${esc(s.name)}">
-          <span class="tag ${tagClass(s.tag)}">${esc(s.tag)}</span>
-          <div><div class="desc">${esc(s.description)}</div><div class="fname">${esc(s.name)}</div></div>
-          <span class="go">Run →</span></div>`).join("")}
-      </div></div></div>
-  </div>
+  <label class="upload-bar" id="drop"><input type="file" id="file" accept="application/pdf" hidden />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
+    <span><b>Have your own invoice?</b> <span class="muted">Drop a PDF here, digital or scanned.</span></span>
+    <span class="btn sm">Upload invoice PDF</span></label>
+  <div class="card samples-card"><div class="card-h"><h2>Try a prepared invoice</h2><span class="muted small">Click one to run it</span></div>
+    <div class="samples">
+      ${samples.map((s, i) => `<div class="sample" data-sample="${esc(s.name)}">
+        <span class="num-badge">${i + 1}</span>
+        <div><div class="desc">${esc(s.title)}${s.tag ? ` <span class="tag">${esc(s.tag)}</span>` : ""}</div><div class="fname">${esc(s.name)}</div></div>
+        ${s.outcome ? `<span class="chip ${esc(s.outcome)}">${esc(s.outcome_label)}</span>` : "<span></span>"}
+        <span class="go">Run →</span></div>`).join("")}
+    </div></div>
+  ${stats.processed ? `
   <div class="kpis">
     ${kpi("Invoices processed", stats.processed, `avg ${stats.avg_seconds}s each`)}
     ${kpi("Auto-approved", stats.auto_rate + "%", `${stats.auto_approved} of ${stats.processed}`)}
@@ -89,15 +88,15 @@ async function renderDashboard() {
     ${kpi("Rejected", stats.rejected, inrShort(stats.value_rejected) + " returned")}
     ${kpi("Value processed", inrShort(stats.value_processed), "all invoices")}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px">
+  <div class="grid g-2 section">
     <div class="card"><div class="card-h"><h2>Why invoices didn't auto-approve</h2></div><div class="card-b">${bars(stats.reasons)}</div></div>
     <div class="card"><div class="card-h"><h2>Who needs to act</h2></div><div class="card-b">${bars(stats.owners, "#2f5bea")}</div></div>
-  </div>
-  <div class="card"><div class="card-h"><h2>Run history</h2><span class="muted small">${runs.length} run(s)</span></div>
+  </div>` : `<div class="empty-results">Run an invoice above to see results here.</div>`}
+  ${runs.length ? `<div class="card section"><div class="card-h"><h2>Run history</h2><span class="muted small">${runs.length} run(s)</span></div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Received</th><th>Vendor</th><th>Invoice</th><th>PO</th><th class="num">Amount</th><th>Decision</th><th>Reason</th><th>Extractor</th><th class="num">Time</th></tr></thead>
-      <tbody>${runs.length ? runs.map(runRow).join("") : `<tr><td colspan="10" class="empty" style="padding:22px">No invoices processed yet. Run one of the prepared invoices above.</td></tr>`}</tbody>
-    </table></div></div>`;
+      <thead><tr><th>#</th><th>Received</th><th>Vendor</th><th>Invoice</th><th>PO</th><th class="num">Amount</th><th>Decision</th><th>Reason</th><th class="nowrap">Read by</th><th class="num">Time</th></tr></thead>
+      <tbody>${runs.map(runRow).join("")}</tbody>
+    </table></div></div>` : ""}`;
 
   document.querySelectorAll("[data-sample]").forEach((el) => el.onclick = async () => {
     const { run_id } = await post(`/api/runs/sample/${encodeURIComponent(el.dataset.sample)}`);
@@ -133,7 +132,7 @@ function runRow(r) {
     <td>${esc(r.vendor_name || r.filename)}</td><td class="mono">${esc(r.invoice_number || "—")}</td>
     <td class="mono nowrap">${esc(r.po_number || "—")}</td><td class="num">${inr(r.total)}</td><td>${d}${sup}</td>
     <td class="small" style="max-width:340px">${esc((r.headline || "").replace(/^(Approve|Hold|Reject) - /, ""))}</td>
-    <td class="small muted">${esc(r.extractor || "")}</td><td class="num small muted">${r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + "s" : ""}</td></tr>`;
+    <td class="small muted" title="${esc(r.extractor || "")}">${esc(readerName(r.extractor))}</td><td class="num small muted">${r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + "s" : ""}</td></tr>`;
 }
 
 // ---------------------------------------------------------------- run view
@@ -147,7 +146,7 @@ async function renderRun(id) {
   $app.innerHTML = `
   <div class="run-head">
     <a class="back" href="#/">← Dashboard</a>
-    <h1>${esc(run.filename)}</h1><span class="muted">Run #${run.id}</span>
+    <h1 id="runTitle">${runTitle(run)}</h1><span class="muted small" id="runFile">${esc(run.filename)} · Run #${run.id}</span>
     <span id="runStatus"></span>
     <span class="muted small" style="margin-left:auto">${when(run.created_at)}</span>
   </div>
@@ -184,9 +183,15 @@ async function renderRun(id) {
   }
 }
 
+// Vendor + invoice number once the invoice has been read; until then, a neutral placeholder.
+const runTitle = (run) => run.vendor_name
+  ? esc(run.vendor_name) + (run.invoice_number ? ` <span class="title-inv">· ${esc(run.invoice_number)}</span>` : "")
+  : run.status === "running" ? "Reading invoice…" : esc(run.filename);
+
 function setStatus(run) {
   const el = document.getElementById("runStatus"); if (!el) return;
-  el.innerHTML = stateChip(run) + (run.extractor ? ` <span class="pill" style="margin-left:6px">${esc(run.extractor)}</span>` : "");
+  el.innerHTML = stateChip(run) + (run.extractor ? ` <span class="pill" style="margin-left:6px" title="${esc(run.extractor)}">Reading: ${esc(readerName(run.extractor))}</span>` : "");
+  const t = document.getElementById("runTitle"); if (t) t.innerHTML = runTitle(run);
 }
 
 function applyEvent(ev) {
@@ -213,7 +218,7 @@ function stageDetails(ev) {
   const d = ev.detail || {};
   if (d.findings) return d.findings.map(findingHtml).join("");
   if (ev.stage === "ingest") return `<div class="small muted">Type: ${esc(d.kind)} · pages: ${d.pages} · sha256 ${esc(d.sha256)}…${d.ocr_error ? "<br>" + esc(d.ocr_error) : ""}</div>`;
-  if (ev.stage === "extract") return `<div class="small muted">Extractor: ${esc(d.extractor)}${d.usage ? ` · ${d.usage.input_tokens} in / ${d.usage.output_tokens} out tokens` : ""}</div>
+  if (ev.stage === "extract") return `<div class="small muted" title="${esc(d.extractor)}">Reading: ${esc(readerName(d.extractor))}${d.usage ? ` · ${d.usage.input_tokens} in / ${d.usage.output_tokens} out tokens` : ""}</div>
     ${(d.warnings || []).map((w) => `<div class="small" style="color:var(--hold)">${esc(w)}</div>`).join("")}`;
   if (ev.stage === "confidence" && d.fields) return ["invoice_number", "invoice_date", "vendor_gstin", "buyer_gstin", "total", "line_items", "bank_account_number", "po_reference"]
     .filter((k) => d.fields[k]).map((k) => `<div class="small" style="display:flex;justify-content:space-between;padding:2px 0"><span>${FIELD_LABELS[k]}</span>${confHtml(d.fields[k])}</div>`).join("");
@@ -384,5 +389,5 @@ document.getElementById("resetBtn").onclick = async () => {
   if (!confirm("Clear all runs and the billing ledger?")) return;
   await post("/api/reset"); toast("Demo reset"); location.hash = "#/"; route();
 };
-api("/api/health").then((h) => { const e = document.getElementById("extractor"); e.textContent = "Extractor: " + h.extractor; e.classList.add(h.llm ? "llm" : "rules"); });
+api("/api/health").then((h) => { const e = document.getElementById("extractor"); e.textContent = "Reading: " + (h.llm ? "Claude" : "OCR"); e.title = h.extractor; });
 route();
