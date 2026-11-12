@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: clearly-ap-agent
+    runtime: docker
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-5-5
+      - key: STAGE_DELAY_MS
+        value: "350"

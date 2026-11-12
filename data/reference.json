@@ -1,0 +1,143 @@
+{
+  "buyer": {
+    "name": "Northwind Retail Pvt Ltd",
+    "gstin": "29AABCN1234F1ZS",
+    "state": "29",
+    "address": "No. 14, Outer Ring Road, Bellandur, Bengaluru, Karnataka 560103"
+  },
+  "policy": {
+    "price_tolerance_pct": 1.0,
+    "price_tolerance_abs": 2.0,
+    "rounding_tolerance": 1.0,
+    "po_overbill_tolerance_pct": 0.0,
+    "max_invoice_age_days": 180,
+    "possible_duplicate_window_days": 45,
+    "implied_po_min_score": 0.75,
+    "implied_po_min_margin": 0.15,
+    "auto_approve_limit": 500000.0
+  },
+  "vendors": [
+    {
+      "vendor_id": "V001",
+      "name": "Sri Lakshmi Packaging Industries",
+      "gstin": "29AAKFS4521M1ZP",
+      "state": "29",
+      "bank": {"account_name": "Sri Lakshmi Packaging Industries", "account_number": "50200061234871", "ifsc": "HDFC0001753"},
+      "contact": "Ravi Kumar, +91 98450 11223 (verified 2025-03)",
+      "status": "active"
+    },
+    {
+      "vendor_id": "V002",
+      "name": "Deccan Office Supplies Pvt Ltd",
+      "gstin": "36AADCD7788K1ZZ",
+      "state": "36",
+      "bank": {"account_name": "Deccan Office Supplies Pvt Ltd", "account_number": "917020045531902", "ifsc": "UTIB0000553"},
+      "contact": "accounts@deccanoffice.example, +91 40 2788 4410",
+      "status": "active"
+    },
+    {
+      "vendor_id": "V003",
+      "name": "Kaveri Electricals & Lighting",
+      "gstin": "29AACFK3310Q1Z4",
+      "state": "29",
+      "bank": {"account_name": "Kaveri Electricals and Lighting", "account_number": "38291044576", "ifsc": "SBIN0040221"},
+      "contact": "Manjunath S, +91 99001 45672",
+      "status": "active"
+    },
+    {
+      "vendor_id": "V004",
+      "name": "Malabar Logistics Solutions Pvt Ltd",
+      "gstin": "32AAGCM9045R1ZV",
+      "state": "32",
+      "bank": {"account_name": "Malabar Logistics Solutions Pvt Ltd", "account_number": "0412073000018822", "ifsc": "SIBL0000412"},
+      "contact": "Anu Thomas (finance), +91 484 240 7781 (verified 2024-11)",
+      "status": "active"
+    },
+    {
+      "vendor_id": "V005",
+      "name": "Coastal Cleaning Chemicals",
+      "gstin": "29AAHFC2210L1ZK",
+      "state": "29",
+      "bank": {"account_name": "Coastal Cleaning Chemicals", "account_number": "1234500987612", "ifsc": "CNRB0002651"},
+      "contact": "orders@coastalclean.example",
+      "status": "active"
+    },
+    {
+      "vendor_id": "V006",
+      "name": "Nilgiri Stationers",
+      "gstin": "33AAJFN6620P1ZW",
+      "state": "33",
+      "bank": {"account_name": "Nilgiri Stationers", "account_number": "6123450098", "ifsc": "IOBA0001290"},
+      "contact": "+91 422 249 1180",
+      "status": "active"
+    }
+  ],
+  "purchase_orders": [
+    {
+      "po_number": "PO-4501", "vendor_id": "V001", "date": "2026-10-06", "status": "open", "buyer": "Priya N (Ops)",
+      "lines": [
+        {"line": 1, "item_code": "PKG-CB3", "description": "Corrugated box 3-ply 18x12x10 in", "hsn": "4819", "qty": 2000, "unit": "pcs", "unit_price": 18.50, "gst_rate": 18},
+        {"line": 2, "item_code": "PKG-TAPE", "description": "BOPP packaging tape 48mm x 65m", "hsn": "3919", "qty": 500, "unit": "rolls", "unit_price": 42.00, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4502", "vendor_id": "V002", "date": "2026-10-09", "status": "open", "buyer": "Arjun M (Admin)",
+      "lines": [
+        {"line": 1, "item_code": "OFF-CHAIR", "description": "Ergonomic mesh office chair", "hsn": "9401", "qty": 25, "unit": "nos", "unit_price": 6450.00, "gst_rate": 18},
+        {"line": 2, "item_code": "OFF-A4", "description": "A4 copier paper 75 GSM (500 sheets)", "hsn": "4802", "qty": 200, "unit": "reams", "unit_price": 248.50, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4503", "vendor_id": "V003", "date": "2026-10-03", "status": "open", "buyer": "Priya N (Ops)",
+      "lines": [
+        {"line": 1, "item_code": "ELC-LED40", "description": "LED panel light 2x2 ft 40W", "hsn": "9405", "qty": 120, "unit": "nos", "unit_price": 1450.00, "gst_rate": 18},
+        {"line": 2, "item_code": "ELC-WIRE", "description": "FR PVC wire 2.5 sq mm (90 m coil)", "hsn": "8544", "qty": 30, "unit": "coils", "unit_price": 2180.00, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4504", "vendor_id": "V004", "date": "2026-10-01", "status": "open", "buyer": "Karthik R (Supply chain)",
+      "lines": [
+        {"line": 1, "item_code": "LOG-FTL", "description": "FTL freight Kochi to Bengaluru DC (32 ft)", "hsn": "996511", "qty": 6, "unit": "trips", "unit_price": 38500.00, "gst_rate": 12},
+        {"line": 2, "item_code": "LOG-LOAD", "description": "Loading and unloading charges", "hsn": "996719", "qty": 6, "unit": "trips", "unit_price": 2500.00, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4505", "vendor_id": "V005", "date": "2026-10-12", "status": "open", "buyer": "Arjun M (Admin)",
+      "lines": [
+        {"line": 1, "item_code": "CLN-FLR5", "description": "Floor cleaner concentrate 5 L", "hsn": "3402", "qty": 60, "unit": "cans", "unit_price": 640.00, "gst_rate": 18},
+        {"line": 2, "item_code": "CLN-HND5", "description": "Liquid hand wash refill 5 L", "hsn": "3401", "qty": 40, "unit": "cans", "unit_price": 520.00, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4506", "vendor_id": "V006", "date": "2026-10-14", "status": "open", "buyer": "Arjun M (Admin)",
+      "lines": [
+        {"line": 1, "item_code": "STN-NB", "description": "Spiral notebook A5 160 pages", "hsn": "4820", "qty": 300, "unit": "nos", "unit_price": 65.00, "gst_rate": 18},
+        {"line": 2, "item_code": "STN-PEN", "description": "Ball pen blue (box of 50)", "hsn": "9608", "qty": 20, "unit": "boxes", "unit_price": 410.00, "gst_rate": 18},
+        {"line": 3, "item_code": "STN-MRK", "description": "Whiteboard marker assorted (pack of 10)", "hsn": "9608", "qty": 40, "unit": "packs", "unit_price": 230.00, "gst_rate": 18}
+      ]
+    },
+    {
+      "po_number": "PO-4511", "vendor_id": "V006", "date": "2026-10-20", "status": "open", "buyer": "Arjun M (Admin)",
+      "lines": [
+        {"line": 1, "item_code": "STN-TONER", "description": "Laser toner cartridge 88A compatible", "hsn": "8443", "qty": 24, "unit": "nos", "unit_price": 1150.00, "gst_rate": 18},
+        {"line": 2, "item_code": "STN-NB", "description": "Spiral notebook A5 160 pages", "hsn": "4820", "qty": 100, "unit": "nos", "unit_price": 65.00, "gst_rate": 18}
+      ]
+    }
+  ],
+  "goods_receipts": [
+    {"grn_number": "GRN-7701", "po_number": "PO-4501", "date": "2026-10-15", "received_by": "Bellandur DC",
+     "lines": [{"line": 1, "qty_received": 2000}, {"line": 2, "qty_received": 500}]},
+    {"grn_number": "GRN-7702", "po_number": "PO-4502", "date": "2026-10-18", "received_by": "HQ Admin",
+     "lines": [{"line": 1, "qty_received": 25}, {"line": 2, "qty_received": 200}]},
+    {"grn_number": "GRN-7703", "po_number": "PO-4503", "date": "2026-10-21", "received_by": "Bellandur DC",
+     "lines": [{"line": 1, "qty_received": 80}, {"line": 2, "qty_received": 30}],
+     "remarks": "40 LED panels back-ordered by vendor"},
+    {"grn_number": "GRN-7704", "po_number": "PO-4504", "date": "2026-10-28", "received_by": "Bellandur DC",
+     "lines": [{"line": 1, "qty_received": 6}, {"line": 2, "qty_received": 6}],
+     "remarks": "Service confirmation: 6 trips completed"},
+    {"grn_number": "GRN-7705", "po_number": "PO-4505", "date": "2026-10-22", "received_by": "HQ Admin",
+     "lines": [{"line": 1, "qty_received": 60}, {"line": 2, "qty_received": 40}]},
+    {"grn_number": "GRN-7706", "po_number": "PO-4506", "date": "2026-10-24", "received_by": "HQ Admin",
+     "lines": [{"line": 1, "qty_received": 300}, {"line": 2, "qty_received": 20}, {"line": 3, "qty_received": 40}]}
+  ]
+}
